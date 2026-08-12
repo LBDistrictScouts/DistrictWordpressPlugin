@@ -1,0 +1,32 @@
+parameters:
+  level: 5
+  paths:
+    - src
+  excludePaths:
+    - tests
+    - vendor
+    - build?
+  stubFiles: []
+  reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    # WordPress functions and constants
+    - '#Function add_action not found#'
+    - '#Function add_filter not found#'
+    - '#Function register_activation_hook not found#'
+    - '#Function register_deactivation_hook not found#'
+    - '#Function flush_rewrite_rules not found#'
+    - '#Function current_user_can not found#'
+    - '#Function is_admin not found#'
+    - '#Function plugin_dir_path not found#'
+    - '#Function plugin_dir_url not found#'
+    - '#Function load_plugin_textdomain not found#'
+    - '#Function add_options_page not found#'
+    - '#Function plugin_basename not found#'
+    - '#Constant WPINC not found#'
+    - '#Constant DISTRICTWP_FILE not found#'
+    - '#Constant DISTRICTWP_VERSION not found#'
+    - '#Constant DISTRICTWP_PATH not found#'
+    - '#Constant DISTRICTWP_URL not found#'
+    - '#Undefined constant.*#'
+    - '#Access to undefined constant#'
+
