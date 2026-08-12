@@ -36,6 +36,8 @@ class TeamRoleTest extends PluginTestCase {
 
         $team_role = new TeamRole();
         $team_role->register();
+
+        $this->assertSame( 'team_role', TeamRole::POST_TYPE );
     }
 
     /**
