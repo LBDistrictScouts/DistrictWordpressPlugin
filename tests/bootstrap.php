@@ -1,23 +1,21 @@
 <?php
 
 /**
- * Test bootstrap.
+ * Test Bootstrap
  *
- * Sets up the testing environment for the District WordPress Plugin.
- *
- * @package LBDistrictScouts\DistrictWordpressPlugin\Tests
+ * Sets up the testing environment for the District WordPress Plugin
  */
 
-// Define WordPress constants that the plugin needs.
-define( 'ABSPATH', __DIR__ . '/../' );
-define( 'WP_PLUGIN_DIR', __DIR__ . '/../plugins' );
-define( 'WPINC', true );
+// Define WordPress constants that the plugin needs
+define('ABSPATH', dirname(__FILE__) . '/../');
+define('WP_PLUGIN_DIR', dirname(__FILE__) . '/../plugins');
+define('WPINC', true);
 
-// Load Composer autoloader.
-require_once __DIR__ . '/../vendor/autoload.php';
+// Load Composer autoloader
+require_once dirname(__FILE__) . '/../vendor/autoload.php';
 
-// Load Brain Monkey.
+// Load Brain Monkey
 Brain\Monkey\setUp();
 
-// Load test base class.
-require_once __DIR__ . '/class-plugintestcase.php';
+// Load test base class
+require_once dirname(__FILE__) . '/PluginTestCase.php';
