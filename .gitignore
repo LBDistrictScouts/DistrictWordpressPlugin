@@ -1,0 +1,7 @@
+/vendor/
+/node_modules/
+/vendor-bin/
+.env
+.DS_Store
+.idea/
+*.log

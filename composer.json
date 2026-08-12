@@ -1,0 +1,13 @@
+{
+  "name": "lbdistrictscouts/district-wordpress-plugin",
+  "description": "Custom Post Types for District CMS",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "LBDistrictScouts\\\\DistrictWordpressPlugin\\\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.4"
+  }
+}
