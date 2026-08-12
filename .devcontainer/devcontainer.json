@@ -19,7 +19,11 @@
       }
     }
   },
+  "containerEnv": {
+    "XKB_DEFAULT_LAYOUT": "gb",
+    "LANG": "en_GB.UTF-8"
+  },
   "forwardPorts": [8000],
-  "postCreateCommand": "composer install || true && npm install || true",
+  "postCreateCommand": "composer install || true && npm install || true && setxkbmap gb || true",
   "remoteUser": "vscode"
 }
