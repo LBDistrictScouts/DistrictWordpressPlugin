@@ -33,6 +33,12 @@ jobs:
           extensions: mbstring, xml
           coverage: pcov
 
+      - name: Verify PHP setup
+        run: |
+          php -v
+          php -m | grep -E 'mbstring|xml|pcov' || echo "Note: pcov might not be shown in cli mode"
+          composer --version
+
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -41,11 +47,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-php${{ matrix.php-version }}-
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: |
+          composer validate
+          composer install --no-interaction --prefer-dist --no-progress
 
       - name: Run PHPUnit tests
         run: composer run test
@@ -73,12 +81,12 @@ jobs:
       - name: Upload coverage to Codecov
         if: matrix.php-version == '8.1' && always()
         uses: codecov/codecov-action@v4
+        continue-on-error: true
         with:
           file: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive coverage report
         if: matrix.php-version == '8.1' && always()
@@ -103,6 +111,12 @@ jobs:
           tools: composer
           extensions: mbstring, xml
 
+      - name: Verify PHP setup
+        run: |
+          php -v
+          php -m | grep -E 'mbstring|xml'
+          composer --version
+
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -111,11 +125,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-php8.1-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-php8.1-
 
       - name: Install dependencies
-        run: composer install --no-dev --optimize-autoloader
+        run: |
+          composer validate
+          composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
       - name: Build plugin zip
         run: |

@@ -2,6 +2,7 @@
   "name": "lbdistrictscouts/district-wordpress-plugin",
   "description": "Custom Post Types for District CMS",
   "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
   "autoload": {
     "psr-4": {
       "LBDistrictScouts\\\\DistrictWordpressPlugin\\\\": "src/"
