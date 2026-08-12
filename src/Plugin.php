@@ -33,12 +33,14 @@ class Plugin {
             require_once DISTRICTWP_PATH . 'src/Admin.php';
         }
         require_once DISTRICTWP_PATH . 'src/Activation.php';
+        require_once DISTRICTWP_PATH . 'src/TeamRole.php';
     }
 
     private function init_hooks() {
         register_activation_hook( DISTRICTWP_FILE, [ 'LBDistrictScouts\\DistrictWordpressPlugin\\Activation', 'activate' ] );
         register_deactivation_hook( DISTRICTWP_FILE, [ 'LBDistrictScouts\\DistrictWordpressPlugin\\Activation', 'deactivate' ] );
         add_action( 'init', [ $this, 'load_textdomain' ] );
+        add_action( 'init', [ new TeamRole(), 'register' ] );
     }
 
     public function load_textdomain() {
