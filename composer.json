@@ -28,7 +28,7 @@
     "phpstan/phpstan": "^1.10"
   },
   "scripts": {
-    "test": "phpunit",
+    "test": "phpunit --no-coverage",
     "test:coverage": "phpunit --coverage-html coverage --coverage-clover coverage.xml",
     "lint": "parallel-lint --exclude vendor src tests",
     "phpstan": "phpstan analyse --level 5 src",

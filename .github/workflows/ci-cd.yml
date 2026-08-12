@@ -76,7 +76,7 @@ jobs:
         if: matrix.php-version == '8.1'
         run: |
           mkdir -p coverage
-          php vendor/bin/phpunit --coverage-html=coverage --coverage-clover=coverage.xml
+          composer run test:coverage
 
       - name: Upload coverage to Codecov
         if: matrix.php-version == '8.1' && always()

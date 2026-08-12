@@ -7,7 +7,7 @@
     beStrictAboutOutputDuringTests="true"
     beStrictAboutTestsThatDoNotTestAnything="true"
     failOnRisky="true"
-    failOnWarning="false"
+    failOnWarning="true"
     cacheDirectory=".phpunit.cache"
     displayDetailsOnIncompleteTests="true"
     displayDetailsOnSkippedTests="true"
@@ -17,7 +17,19 @@
             <directory>tests/</directory>
         </testsuite>
     </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </source>
+
     <coverage cacheDirectory=".phpunit.cache">
+        <report>
+            <html outputDirectory="coverage" lowUpperBound="50" highLowerBound="80"/>
+            <clover outputFile="coverage.xml"/>
+            <text outputFile="php://stdout"/>
+        </report>
     </coverage>
     <php>
         <ini name="error_reporting" value="-1"/>
