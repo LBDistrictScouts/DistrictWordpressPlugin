@@ -30,7 +30,8 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer
-          coverage: xdebug
+          extensions: mbstring, xml
+          coverage: pcov
 
       - name: Get composer cache directory
         id: composer-cache
@@ -67,16 +68,17 @@ jobs:
         if: matrix.php-version == '8.1'
         run: |
           mkdir -p coverage
-          php vendor/bin/phpunit --coverage-html=coverage --coverage-clover=coverage.xml || true
+          php vendor/bin/phpunit --coverage-html=coverage --coverage-clover=coverage.xml
 
       - name: Upload coverage to Codecov
-        if: matrix.php-version == '8.1'
+        if: matrix.php-version == '8.1' && always()
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.xml
+          file: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive coverage report
         if: matrix.php-version == '8.1' && always()
@@ -99,6 +101,7 @@ jobs:
         with:
           php-version: "8.1"
           tools: composer
+          extensions: mbstring, xml
 
       - name: Get composer cache directory
         id: composer-cache
