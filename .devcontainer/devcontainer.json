@@ -1,0 +1,25 @@
+{
+  "name": "District WordPress Plugin - Codespace",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "felixfbecker.php-debug",
+        "neilbrayfield.php-docblocker"
+      ],
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "forwardPorts": [8000],
+  "postCreateCommand": "composer install || true && npm install || true",
+  "remoteUser": "vscode"
+}
