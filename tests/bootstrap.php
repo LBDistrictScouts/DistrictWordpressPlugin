@@ -17,5 +17,8 @@ require_once dirname(__FILE__) . '/../vendor/autoload.php';
 // Load Brain Monkey
 Brain\Monkey\setUp();
 
+// Load source classes required by tests
+require_once dirname(__FILE__) . '/../src/TeamRole.php';
+
 // Load test base class
 require_once dirname(__FILE__) . '/PluginTestCase.php';
