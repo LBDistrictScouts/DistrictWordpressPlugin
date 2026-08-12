@@ -8,21 +8,17 @@
     <!-- Include WordPress documentation standards -->
     <rule ref="WordPress-Docs"/>
 
-    <!-- Exclude specific WordPress rules that may be overly strict -->
-    <rule ref="WordPress.NamingConventions.ValidVariableName">
-        <properties>
-            <property name="customPropertiesWhitelist" type="array">
-                <element value="post_type"/>
-                <element value="post_mime_type"/>
-                <element value="post_status"/>
-            </property>
-        </properties>
-    </rule>
-
     <!-- Exclude VIP-specific rules -->
     <rule ref="WordPress.Security.NonceVerification.Missing">
         <severity>warning</severity>
     </rule>
+
+    <!-- These smoke tests intentionally read plugin files as fixtures. -->
+    <rule ref="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents">
+        <severity>0</severity>
+    </rule>
+
+    <exclude name="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents"/>
 
     <!-- Paths to check -->
     <arg name="basepath" value="."/>

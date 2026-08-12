@@ -32,8 +32,8 @@
     "test:coverage": "phpunit --coverage-html coverage --coverage-clover coverage.xml",
     "lint": "parallel-lint --exclude vendor src tests",
     "phpstan": "phpstan analyse --level 5 src",
-    "phpcs": "phpcs --standard=WordPress src tests --ignore=vendor",
-    "phpcs:fix": "phpcbf --standard=WordPress src tests --ignore=vendor",
+    "phpcs": "phpcs --standard=.phpcs.xml.dist src tests --ignore=vendor",
+    "phpcs:fix": "phpcbf --standard=.phpcs.xml.dist src tests --ignore=vendor",
     "quality": [
       "@lint",
       "@phpcs",
