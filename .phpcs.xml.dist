@@ -2,8 +2,10 @@
 <ruleset name="District WordPress Plugin">
     <description>WordPress Coding Standards for District WordPress Plugin</description>
 
-    <!-- Include WordPress standards -->
-    <rule ref="WordPress"/>
+    <!-- Include WordPress standards, but use Composer PSR-4 filename conventions. -->
+    <rule ref="WordPress">
+        <exclude name="WordPress.Files.FileName"/>
+    </rule>
 
     <!-- Include WordPress documentation standards -->
     <rule ref="WordPress-Docs"/>
@@ -17,8 +19,6 @@
     <rule ref="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents">
         <severity>0</severity>
     </rule>
-
-    <exclude name="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents"/>
 
     <!-- Paths to check -->
     <arg name="basepath" value="."/>
