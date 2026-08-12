@@ -1,17 +1,81 @@
-name: Build WordPress Plugin Release
+name: Test, Build & Release
 
 on:
   push:
     branches:
       - main
+      - develop
     tags:
-      - 'v*'
+      - "v*"
+  pull_request:
+    branches:
+      - main
+      - develop
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    
+
+    strategy:
+      matrix:
+        php-version: ["8.1", "8.2", "8.3"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer
+          coverage: xdebug
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run PHPUnit tests
+        run: composer run test
+
+      - name: Generate coverage report
+        if: matrix.php-version == '8.1'
+        run: |
+          mkdir -p coverage
+          php vendor/bin/phpunit --coverage-html=coverage --coverage-clover=coverage.xml || true
+
+      - name: Upload coverage to Codecov
+        if: matrix.php-version == '8.1'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Archive coverage report
+        if: matrix.php-version == '8.1' && always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,7 +83,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: "8.1"
           tools: composer
 
       - name: Get composer cache directory
@@ -40,10 +104,10 @@ jobs:
         run: |
           PLUGIN_DIR="district-wordpress-plugin"
           ZIP_FILE="$PLUGIN_DIR.zip"
-          
+
           # Create a temporary build directory
           mkdir -p build/$PLUGIN_DIR
-          
+
           # Copy plugin files, excluding unnecessary files
           rsync -av \
             --exclude='.git' \
@@ -56,13 +120,14 @@ jobs:
             --exclude='README.md' \
             --exclude='LICENSE' \
             --exclude='build' \
+            --exclude='tests' \
             ./ build/$PLUGIN_DIR/
-          
+
           # Create zip file
           cd build
           zip -r "$ZIP_FILE" "$PLUGIN_DIR" -q
           cd ..
-          
+
           # Move zip to root for easy access
           mv "build/$ZIP_FILE" .
           echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
@@ -75,8 +140,18 @@ jobs:
           path: district-wordpress-plugin.zip
           retention-days: 30
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: district-wordpress-plugin
+
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: district-wordpress-plugin.zip
