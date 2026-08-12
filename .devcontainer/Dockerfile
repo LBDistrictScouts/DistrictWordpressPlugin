@@ -1,20 +1,20 @@
-FROM php:8.1-cli
+FROM php:8.1-alpine
 
 # Install system dependencies
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     git \
     unzip \
     zip \
     curl \
+    bash \
+    libzip \
     libzip-dev \
     libpng-dev \
     libxml2-dev \
-    default-mysql-client \
+    mysql-client \
     gnupg \
     ca-certificates \
-    lsb-release \
-    apt-transport-https \
-    && docker-php-ext-install zip pdo pdo_mysql && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install zip pdo pdo_mysql
 
 # Install Composer (copy from official composer image)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -23,18 +23,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp \
     && chmod +x /usr/local/bin/wp
 
-# Install Node.js (LTS 16.x)
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm@latest
-
 # Create vscode user (used by Codespaces) and set permissions
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-RUN groupadd --gid $USER_GID $USERNAME || true \
-    && useradd -m --uid $USER_UID --gid $USER_GID $USERNAME || true \
-    && usermod -aG www-data $USERNAME || true
+RUN addgroup -g $USER_GID $USERNAME 2>/dev/null || true \
+    && adduser -D -u $USER_UID -G $USERNAME $USERNAME 2>/dev/null || true
 
 WORKDIR /workspace
 
