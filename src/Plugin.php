@@ -1,6 +1,8 @@
 <?php
 namespace LBDistrictScouts\DistrictWordpressPlugin;
 
+use LBDistrictScouts\DistrictWordpressPlugin\Sync\SyncCommand;
+
 class Plugin {
     private static $instance = null;
     private $file;
@@ -34,12 +36,19 @@ class Plugin {
         }
         require_once DISTRICTWP_PATH . 'src/TeamRole.php';
         require_once DISTRICTWP_PATH . 'src/RewriteManager.php';
+        foreach ( [ 'DistrictTeamApiClient', 'DirectorySourceValidator', 'TeamRolePostRepository', 'SyncLock', 'DirectorySynchronizer', 'SyncCommand' ] as $class ) {
+            require_once DISTRICTWP_PATH . 'src/Sync/' . $class . '.php';
+        }
     }
 
     private function init_hooks() {
         add_action( 'init', [ $this, 'load_textdomain' ] );
         add_action( 'init', [ new TeamRole(), 'register' ] );
         add_action( 'init', [ RewriteManager::class, 'maybe_flush' ], 20 );
+
+        if ( defined( 'WP_CLI' ) && WP_CLI ) {
+            \WP_CLI::add_command( 'district-team sync', new SyncCommand() );
+        }
     }
 
     public function load_textdomain() {
