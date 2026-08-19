@@ -19,6 +19,7 @@ Brain\Monkey\setUp();
 
 // Load source classes required by tests
 require_once dirname(__FILE__) . '/../src/TeamRole.php';
+require_once dirname(__FILE__) . '/../src/RewriteManager.php';
 
 // Load test base class
 require_once dirname(__FILE__) . '/PluginTestCase.php';
