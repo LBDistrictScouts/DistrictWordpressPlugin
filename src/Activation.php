@@ -7,7 +7,7 @@ class Activation {
         $team_role = new TeamRole();
         $team_role->register();
 
-        flush_rewrite_rules();
+        RewriteManager::flush_and_mark_current();
     }
 
     public static function deactivate() {
