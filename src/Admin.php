@@ -124,7 +124,8 @@ class Admin {
         echo '<input type="hidden" name="action" value="district_team_sync" />';
         wp_nonce_field( 'district_team_sync' );
         echo '<p><label><input type="checkbox" name="dry_run" value="1" /> Dry run — fetch and reconcile without changing WordPress content</label></p>';
-        submit_button( 'Run Sync Now', 'primary', 'submit', false, [ 'disabled' => ( ! $configured_url || $running ) ] );
+        $button_attributes = ( ! $configured_url || $running ) ? [ 'disabled' => 'disabled' ] : [];
+        submit_button( 'Run Sync Now', 'primary', 'submit', false, $button_attributes );
         echo '</form>';
         echo '<p class="description">The sync runs synchronously. The page returns with reconciliation counts when complete; it does not display a percentage because the source API does not expose reliable progress information.</p>';
         echo '</div>';
