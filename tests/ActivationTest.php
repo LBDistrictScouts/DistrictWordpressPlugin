@@ -2,8 +2,6 @@
 
 namespace LBDistrictScouts\DistrictWordpressPlugin\Tests;
 
-use Brain\Monkey\Functions;
-
 /**
  * Tests for plugin activation
  *
@@ -39,18 +37,17 @@ class ActivationTest extends PluginTestCase
     }
 
     /**
-     * Test that the Activation file handles permissions check
+     * Activation hooks are already permission-gated by WordPress and must also
+     * work in non-interactive contexts such as WP-CLI deployments.
      */
-    public function test_activation_checks_permissions(): void
+    public function test_activation_does_not_require_logged_in_user(): void
     {
         $plugin_root = dirname(__DIR__);
         $activation_file = $plugin_root . '/src/Activation.php';
 
         $content = file_get_contents($activation_file);
 
-        // Check that activation checks user permissions
-        $this->assertStringContainsString('current_user_can', $content);
-        $this->assertStringContainsString('activate_plugins', $content);
+        $this->assertStringNotContainsString('current_user_can', $content);
     }
 
     /**
