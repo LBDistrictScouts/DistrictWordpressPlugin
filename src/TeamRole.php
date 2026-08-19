@@ -18,7 +18,7 @@ class TeamRole {
     public const POST_TYPE = 'team_role';
 
     /**
-     * Register the post type.
+     * Register the post type and its public synchronization metadata.
      *
      * @return void
      */
@@ -51,12 +51,50 @@ class TeamRole {
             'show_in_rest'       => true,
             'has_archive'        => true,
             'rewrite'            => array( 'slug' => 'team-roles' ),
-            'supports'           => array( 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ),
+            'supports'           => array( 'title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'custom-fields' ),
             'menu_icon'          => 'dashicons-groups',
             'hierarchical'       => false,
             'publicly_queryable' => true,
         );
 
         register_post_type( self::POST_TYPE, $args );
+        $this->register_meta();
+    }
+
+    /**
+     * Register public-safe synchronization metadata for REST responses.
+     *
+     * @return void
+     */
+    private function register_meta(): void {
+        $string_fields = array(
+            '_district_source_id',
+            '_district_source_type',
+            '_district_parent_team_id',
+            '_district_owner_team_id',
+            '_district_role_description',
+        );
+
+        foreach ( $string_fields as $field ) {
+            register_post_meta(
+                self::POST_TYPE,
+                $field,
+                array(
+                    'type'         => 'string',
+                    'single'       => true,
+                    'show_in_rest' => true,
+                )
+            );
+        }
+
+        register_post_meta(
+            self::POST_TYPE,
+            '_district_currently_filled',
+            array(
+                'type'         => 'boolean',
+                'single'       => true,
+                'show_in_rest' => true,
+            )
+        );
     }
 }
