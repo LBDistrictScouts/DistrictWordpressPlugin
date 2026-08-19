@@ -169,12 +169,13 @@ jobs:
             --skip-check
           wp core install \
             --path=/tmp/wordpress \
-            --url=http://localhost \
+            --url=http://127.0.0.1:8080 \
             --title="District Plugin CI" \
             --admin_user=admin \
             --admin_password=ci-password \
             --admin_email=ci@example.invalid \
             --skip-email
+          wp rewrite structure '/%postname%/' --path=/tmp/wordpress
 
       - name: Install and activate built plugin
         run: |
@@ -187,6 +188,33 @@ jobs:
         run: |
           wp eval 'if (!post_type_exists("team_role")) { fwrite(STDERR, "team_role post type was not registered\n"); exit(1); }' \
             --path=/tmp/wordpress
+
+      - name: Verify published TeamRole permalink resolves
+        run: |
+          POST_ID=$(wp post create \
+            --path=/tmp/wordpress \
+            --post_type=team_role \
+            --post_status=publish \
+            --post_title='CI Team Role' \
+            --post_content='Team Role integration test' \
+            --porcelain)
+          PERMALINK=$(wp post url "$POST_ID" --path=/tmp/wordpress)
+          echo "Created TeamRole $POST_ID at $PERMALINK"
+
+          wp server --path=/tmp/wordpress --host=127.0.0.1 --port=8080 > /tmp/wordpress-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --silent --fail http://127.0.0.1:8080/ > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          HTTP_STATUS=$(curl --silent --output /tmp/team-role-response.html --write-out '%{http_code}' "$PERMALINK")
+          cat /tmp/team-role-response.html
+          test "$HTTP_STATUS" = "200"
 
   build:
     needs: [test, wordpress-integration]

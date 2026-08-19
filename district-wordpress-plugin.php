@@ -22,7 +22,11 @@ if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
     require_once __DIR__ . '/vendor/autoload.php';
 }
 
+use LBDistrictScouts\DistrictWordpressPlugin\Activation;
 use LBDistrictScouts\DistrictWordpressPlugin\Plugin;
+
+register_activation_hook( __FILE__, array( Activation::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( Activation::class, 'deactivate' ) );
 
 function district_wordpress_plugin_init() {
     $plugin = Plugin::get_instance( __FILE__ );
