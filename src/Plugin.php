@@ -33,11 +33,13 @@ class Plugin {
             require_once DISTRICTWP_PATH . 'src/Admin.php';
         }
         require_once DISTRICTWP_PATH . 'src/TeamRole.php';
+        require_once DISTRICTWP_PATH . 'src/RewriteManager.php';
     }
 
     private function init_hooks() {
         add_action( 'init', [ $this, 'load_textdomain' ] );
         add_action( 'init', [ new TeamRole(), 'register' ] );
+        add_action( 'init', [ RewriteManager::class, 'maybe_flush' ], 20 );
     }
 
     public function load_textdomain() {
