@@ -64,6 +64,9 @@ class TeamRole {
     /**
      * Register public-safe synchronization metadata for REST responses.
      *
+     * These fields are readable through REST but not writable through REST; CakePHP
+     * remains the source of truth and only the synchronizer should change them.
+     *
      * @return void
      */
     private function register_meta(): void {
@@ -80,9 +83,11 @@ class TeamRole {
                 self::POST_TYPE,
                 $field,
                 array(
-                    'type'         => 'string',
-                    'single'       => true,
-                    'show_in_rest' => true,
+                    'type'              => 'string',
+                    'single'            => true,
+                    'show_in_rest'      => true,
+                    'auth_callback'     => '__return_false',
+                    'sanitize_callback' => 'sanitize_text_field',
                 )
             );
         }
@@ -91,9 +96,10 @@ class TeamRole {
             self::POST_TYPE,
             '_district_currently_filled',
             array(
-                'type'         => 'boolean',
-                'single'       => true,
-                'show_in_rest' => true,
+                'type'          => 'boolean',
+                'single'        => true,
+                'show_in_rest'  => true,
+                'auth_callback' => '__return_false',
             )
         );
     }
