@@ -254,6 +254,25 @@ jobs:
           composer validate
           composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
+      - name: Set package version from release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release tag: $GITHUB_REF_NAME"
+            echo "Expected a tag such as v1.2.3 or v1.2.3-beta.1"
+            exit 1
+          fi
+
+          sed -i -E "s/^ \* Version: .*/ * Version: $VERSION/" district-wordpress-plugin.php
+          sed -i -E "s/define\( 'DISTRICTWP_VERSION', '[^']+' \);/define( 'DISTRICTWP_VERSION', '$VERSION' );/" src/Plugin.php
+
+          grep -F " * Version: $VERSION" district-wordpress-plugin.php
+          grep -F "define( 'DISTRICTWP_VERSION', '$VERSION' );" src/Plugin.php
+          echo "PLUGIN_VERSION=$VERSION" >> "$GITHUB_ENV"
+
       - name: Build plugin zip
         run: |
           PLUGIN_DIR="district-wordpress-plugin"
@@ -277,7 +296,7 @@ jobs:
           cd ..
           mv "build/$ZIP_FILE" .
           echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
-          echo "Built $ZIP_FILE successfully"
+          echo "Built $ZIP_FILE successfully${PLUGIN_VERSION:+ at version $PLUGIN_VERSION}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
