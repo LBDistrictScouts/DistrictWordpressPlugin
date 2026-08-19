@@ -5,12 +5,12 @@
   "license": "GPL-2.0-or-later",
   "autoload": {
     "psr-4": {
-      "LBDistrictScouts\\\\DistrictWordpressPlugin\\\\": "src/"
+      "LBDistrictScouts\\DistrictWordpressPlugin\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "LBDistrictScouts\\\\DistrictWordpressPlugin\\\\Tests\\\\": "tests/"
+      "LBDistrictScouts\\DistrictWordpressPlugin\\Tests\\": "tests/"
     }
   },
   "require": {
