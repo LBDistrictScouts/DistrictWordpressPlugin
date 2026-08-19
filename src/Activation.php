@@ -3,10 +3,6 @@ namespace LBDistrictScouts\DistrictWordpressPlugin;
 
 class Activation {
     public static function activate() {
-        if ( ! current_user_can( 'activate_plugins' ) ) {
-            return;
-        }
-
         // Register rewrite-producing content types before persisting rewrite rules.
         $team_role = new TeamRole();
         $team_role->register();
