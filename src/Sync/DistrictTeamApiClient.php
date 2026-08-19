@@ -4,11 +4,20 @@ namespace LBDistrictScouts\DistrictWordpressPlugin\Sync;
 use RuntimeException;
 
 class DistrictTeamApiClient {
+    public const OPTION_NAME = 'district_team_api_url';
+
     private string $base_url;
 
     public function __construct( ?string $base_url = null ) {
-        $configured = $base_url ?? ( defined( 'DISTRICT_TEAM_API_URL' ) ? DISTRICT_TEAM_API_URL : '' );
-        $this->base_url = untrailingslashit( $configured );
+        if ( null !== $base_url ) {
+            $configured = $base_url;
+        } elseif ( defined( 'DISTRICT_TEAM_API_URL' ) ) {
+            $configured = DISTRICT_TEAM_API_URL;
+        } else {
+            $configured = (string) get_option( self::OPTION_NAME, '' );
+        }
+
+        $this->base_url = untrailingslashit( esc_url_raw( $configured ) );
     }
 
     public function fetch_teams(): array {
@@ -21,7 +30,7 @@ class DistrictTeamApiClient {
 
     private function fetch_collection( string $resource ): array {
         if ( '' === $this->base_url ) {
-            throw new RuntimeException( 'DISTRICT_TEAM_API_URL is not configured.' );
+            throw new RuntimeException( 'District Team API URL is not configured.' );
         }
 
         $records = [];
