@@ -11,7 +11,7 @@ use LBDistrictScouts\DistrictWordpressPlugin\TeamRole;
 class TeamRoleTest extends PluginTestCase {
 
     /**
-     * Test that TeamRole registers the expected post type.
+     * Test that TeamRole registers the expected post type and REST meta support.
      *
      * @return void
      */
@@ -29,15 +29,42 @@ class TeamRoleTest extends PluginTestCase {
                             && true === $args['has_archive']
                             && array( 'slug' => 'team-roles' ) === $args['rewrite']
                             && in_array( 'title', $args['supports'], true )
-                            && in_array( 'editor', $args['supports'], true );
+                            && in_array( 'editor', $args['supports'], true )
+                            && in_array( 'custom-fields', $args['supports'], true );
                     }
                 )
             );
 
+        $registered_meta = array();
+        Functions\when( 'register_post_meta' )->alias(
+            static function ( string $post_type, string $meta_key, array $args ) use ( &$registered_meta ): bool {
+                $registered_meta[ $meta_key ] = array(
+                    'post_type' => $post_type,
+                    'args'      => $args,
+                );
+                return true;
+            }
+        );
+
         $team_role = new TeamRole();
         $team_role->register();
 
-        $this->assertSame( 'team_role', TeamRole::POST_TYPE );
+        $expected = array(
+            '_district_source_id'          => 'string',
+            '_district_source_type'        => 'string',
+            '_district_parent_team_id'     => 'string',
+            '_district_owner_team_id'      => 'string',
+            '_district_role_description'   => 'string',
+            '_district_currently_filled'   => 'boolean',
+        );
+
+        foreach ( $expected as $key => $type ) {
+            $this->assertArrayHasKey( $key, $registered_meta );
+            $this->assertSame( TeamRole::POST_TYPE, $registered_meta[ $key ]['post_type'] );
+            $this->assertTrue( $registered_meta[ $key ]['args']['show_in_rest'] );
+            $this->assertTrue( $registered_meta[ $key ]['args']['single'] );
+            $this->assertSame( $type, $registered_meta[ $key ]['args']['type'] );
+        }
     }
 
     /**
