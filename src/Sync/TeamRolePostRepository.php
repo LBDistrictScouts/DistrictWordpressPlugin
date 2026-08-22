@@ -108,7 +108,8 @@ class TeamRolePostRepository {
         } else {
             $meta['_district_owner_team_id'] = sanitize_text_field( (string) $record['team_id'] );
             $meta['_district_role_description'] = sanitize_textarea_field( (string) ( $record['description'] ?? '' ) );
-            $meta['_district_currently_filled'] = ! empty( $record['currently_filled'] ) ? '1' : '0';
+            $meta['_district_currently_filled'] = ! empty( $record['currently_filled'] );
+            $meta['_district_is_lead'] = ! empty( $record['is_lead'] );
         }
         return $meta;
     }
