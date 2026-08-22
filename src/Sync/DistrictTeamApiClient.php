@@ -36,7 +36,7 @@ class DistrictTeamApiClient {
         $records = [];
         $page = 1;
         do {
-            $url = add_query_arg( [ 'limit' => 100, 'page' => $page ], $this->base_url . '/' . $resource );
+            $url = add_query_arg( [ 'limit' => 100, 'page' => $page ], $this->api_url( $resource ) );
             $response = wp_remote_get( $url, [
                 'headers' => [ 'Accept' => 'application/json' ],
                 'timeout' => 15,
@@ -59,5 +59,11 @@ class DistrictTeamApiClient {
         } while ( $page <= $page_count );
 
         return $records;
+    }
+
+    private function api_url( string $resource ): string {
+        $api_base = preg_match( '#/api$#i', $this->base_url ) ? $this->base_url : $this->base_url . '/api';
+
+        return $api_base . '/' . $resource;
     }
 }

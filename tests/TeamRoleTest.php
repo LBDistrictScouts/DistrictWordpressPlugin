@@ -56,6 +56,7 @@ class TeamRoleTest extends PluginTestCase {
             '_district_owner_team_id'      => 'string',
             '_district_role_description'   => 'string',
             '_district_currently_filled'   => 'boolean',
+            '_district_is_lead'            => 'boolean',
         );
 
         foreach ( $expected as $key => $type ) {

@@ -92,15 +92,17 @@ class TeamRole {
             );
         }
 
-        register_post_meta(
-            self::POST_TYPE,
-            '_district_currently_filled',
-            array(
-                'type'          => 'boolean',
-                'single'        => true,
-                'show_in_rest'  => true,
-                'auth_callback' => '__return_false',
-            )
-        );
+        foreach ( array( '_district_currently_filled', '_district_is_lead' ) as $field ) {
+            register_post_meta(
+                self::POST_TYPE,
+                $field,
+                array(
+                    'type'          => 'boolean',
+                    'single'        => true,
+                    'show_in_rest'  => true,
+                    'auth_callback' => '__return_false',
+                )
+            );
+        }
     }
 }

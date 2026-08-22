@@ -54,7 +54,7 @@ class Admin {
         if ( $constant_override ) {
             echo '<p class="description">Configured by the <code>DISTRICT_TEAM_API_URL</code> constant. The WordPress setting is disabled.</p>';
         } else {
-            echo '<p class="description">Base URL for the CakePHP directory API. Do not include <code>/teams</code> or <code>/roles</code>.</p>';
+            echo '<p class="description">Base URL for the CakePHP directory service. The plugin uses its <code>/api/teams</code> and <code>/api/roles</code> endpoints.</p>';
         }
     }
 
