@@ -3,6 +3,7 @@ namespace LBDistrictScouts\DistrictWordpressPlugin\Tests;
 
 use Brain\Monkey\Functions;
 use LBDistrictScouts\DistrictWordpressPlugin\Sync\DistrictTeamApiClient;
+use RuntimeException;
 
 class DistrictTeamApiClientTest extends PluginTestCase {
     public function test_fetches_all_pages_from_api_prefix(): void {
@@ -67,5 +68,37 @@ class DistrictTeamApiClientTest extends PluginTestCase {
         Functions\when( 'wp_remote_retrieve_body' )->alias( static fn( $response ) => $response['body'] );
 
         $this->assertSame( [], ( new DistrictTeamApiClient( 'https://example.org/api' ) )->fetch_roles() );
+    }
+
+    public function test_rejects_empty_configuration(): void {
+        Functions\when( 'get_option' )->justReturn( '' );
+        Functions\when( 'esc_url_raw' )->returnArg();
+        Functions\when( 'untrailingslashit' )->returnArg();
+        $this->expectException( RuntimeException::class );
+        ( new DistrictTeamApiClient() )->fetch_teams();
+    }
+
+    public function test_reports_transport_error(): void {
+        $error = new class() {
+            public function get_error_message(): string { return 'Network down'; }
+        };
+        Functions\when( 'esc_url_raw' )->returnArg();
+        Functions\when( 'untrailingslashit' )->returnArg();
+        Functions\when( 'add_query_arg' )->justReturn( 'url' );
+        Functions\when( 'wp_remote_get' )->justReturn( $error );
+        Functions\when( 'is_wp_error' )->justReturn( true );
+        $this->expectExceptionMessage( 'Network down' );
+        ( new DistrictTeamApiClient( 'https://example.org' ) )->fetch_roles();
+    }
+
+    public function test_rejects_http_and_malformed_responses(): void {
+        Functions\when( 'esc_url_raw' )->returnArg();
+        Functions\when( 'untrailingslashit' )->returnArg();
+        Functions\when( 'add_query_arg' )->justReturn( 'url' );
+        Functions\when( 'wp_remote_get' )->justReturn( array( 'code' => 500 ) );
+        Functions\when( 'is_wp_error' )->justReturn( false );
+        Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 500 );
+        $this->expectExceptionMessage( 'HTTP 500' );
+        ( new DistrictTeamApiClient( 'https://example.org' ) )->fetch_teams();
     }
 }

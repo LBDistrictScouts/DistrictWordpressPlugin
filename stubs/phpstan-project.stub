@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * Runtime constants supplied by WordPress configuration or plugin bootstrap.
+ */
+const DISTRICT_TEAM_API_URL = '';
+const DISTRICTWP_FILE = '';
+const DISTRICTWP_VERSION = '';
+const DISTRICTWP_PATH = '';
+const DISTRICTWP_URL = '';

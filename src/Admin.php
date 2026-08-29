@@ -158,6 +158,6 @@ class Admin {
         }
 
         wp_safe_redirect( $redirect );
-        exit;
+        return;
     }
 }

@@ -55,13 +55,17 @@ class TeamRolePostRepository {
     public function deactivate_missing( array $source_keys, bool $dry_run = false ): int {
         $count = 0;
         foreach ( $this->find_all_synced() as $post ) {
+            if ( 'trash' === $post->post_status ) {
+                continue;
+            }
+
             $key = get_post_meta( $post->ID, '_district_source_type', true ) . ':' . get_post_meta( $post->ID, '_district_source_id', true );
-            if ( isset( $source_keys[ $key ] ) || 'draft' === $post->post_status ) {
+            if ( isset( $source_keys[ $key ] ) ) {
                 continue;
             }
             ++$count;
             if ( ! $dry_run ) {
-                $result = wp_update_post( [ 'ID' => $post->ID, 'post_status' => 'draft' ], true );
+                $result = wp_trash_post( $post->ID );
                 $this->assert_write( $result );
                 update_post_meta( $post->ID, '_district_deactivated_at', gmdate( 'c' ) );
                 update_post_meta( $post->ID, '_district_deactivated_reason', 'missing_from_source' );

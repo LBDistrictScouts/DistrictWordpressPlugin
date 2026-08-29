@@ -2,6 +2,10 @@
 
 namespace LBDistrictScouts\DistrictWordpressPlugin\Tests;
 
+use Brain\Monkey\Functions;
+use LBDistrictScouts\DistrictWordpressPlugin\Activation;
+use LBDistrictScouts\DistrictWordpressPlugin\RewriteManager;
+
 /**
  * Tests for plugin activation
  *
@@ -62,5 +66,23 @@ class ActivationTest extends PluginTestCase
 
         // Check that rewrite rules are flushed
         $this->assertStringContainsString('flush_rewrite_rules', $content);
+    }
+
+    public function test_activation_registers_content_and_flushes_rewrites(): void {
+        Functions\when( '__' )->returnArg();
+        Functions\when( 'register_post_type' )->justReturn( true );
+        Functions\when( 'register_post_meta' )->justReturn( true );
+        Functions\expect( 'flush_rewrite_rules' )->once();
+        Functions\expect( 'update_option' )->once()->with( RewriteManager::OPTION_NAME, RewriteManager::VERSION );
+
+        Activation::activate();
+
+        $this->addToAssertionCount( 1 );
+    }
+
+    public function test_deactivation_flushes_rewrites(): void {
+        Functions\expect( 'flush_rewrite_rules' )->once();
+        Activation::deactivate();
+        $this->addToAssertionCount( 1 );
     }
 }
