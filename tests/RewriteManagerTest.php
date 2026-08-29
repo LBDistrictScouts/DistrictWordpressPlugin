@@ -26,7 +26,7 @@ class RewriteManagerTest extends PluginTestCase {
 
         RewriteManager::maybe_flush();
 
-        $this->assertSame( '1', RewriteManager::VERSION );
+        $this->assertSame( '2', RewriteManager::VERSION );
     }
 
     /**

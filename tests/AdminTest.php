@@ -90,8 +90,9 @@ class AdminTest extends PluginTestCase
             DistrictTeamApiClient::OPTION_NAME,
             \Mockery::type( 'array' )
         );
-        Functions\expect( 'add_settings_section' )->once();
-        Functions\expect( 'add_settings_field' )->once();
+        Functions\expect( 'register_setting' )->twice()->with( 'district_wordpress_plugin', \Mockery::type( 'string' ), \Mockery::type( 'array' ) );
+        Functions\expect( 'add_settings_section' )->twice();
+        Functions\expect( 'add_settings_field' )->times( 3 );
         $admin->register_settings();
         $this->addToAssertionCount( 1 );
     }

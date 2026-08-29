@@ -12,7 +12,7 @@ class PluginBehaviorTest extends PluginTestCase {
         Functions\when( 'plugin_dir_path' )->alias( static fn() => dirname( __DIR__ ) . '/' );
         Functions\when( 'plugin_dir_url' )->justReturn( 'https://example.org/wp-content/plugins/district-wordpress-plugin/' );
         Functions\when( 'is_admin' )->justReturn( false );
-        Functions\expect( 'add_action' )->times( 3 );
+        Functions\expect( 'add_action' )->times( 7 );
 
         $plugin = Plugin::get_instance( $plugin_file );
 

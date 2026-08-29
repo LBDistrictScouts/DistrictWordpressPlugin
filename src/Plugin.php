@@ -35,6 +35,11 @@ class Plugin {
             require_once DISTRICTWP_PATH . 'src/Admin.php';
         }
         require_once DISTRICTWP_PATH . 'src/TeamRole.php';
+        require_once DISTRICTWP_PATH . 'src/CoordinatorIssue.php';
+        require_once DISTRICTWP_PATH . 'src/Policy.php';
+        require_once DISTRICTWP_PATH . 'src/CoordinatorIssueMessageValidator.php';
+        require_once DISTRICTWP_PATH . 'src/CoordinatorIssueIngester.php';
+        require_once DISTRICTWP_PATH . 'src/CoordinatorIssueQueue.php';
         require_once DISTRICTWP_PATH . 'src/RewriteManager.php';
         foreach ( [ 'DistrictTeamApiClient', 'DirectorySourceValidator', 'TeamRolePostRepository', 'SyncLock', 'DirectorySynchronizer', 'SyncCommand' ] as $class ) {
             require_once DISTRICTWP_PATH . 'src/Sync/' . $class . '.php';
@@ -44,7 +49,12 @@ class Plugin {
     private function init_hooks() {
         add_action( 'init', [ $this, 'load_textdomain' ] );
         add_action( 'init', [ new TeamRole(), 'register' ] );
+        add_action( 'init', [ new CoordinatorIssue(), 'register' ] );
+        add_action( 'init', [ new Policy(), 'register' ] );
         add_action( 'init', [ RewriteManager::class, 'maybe_flush' ], 20 );
+        add_filter( 'cron_schedules', [ CoordinatorIssueQueue::class, 'add_interval' ] );
+        add_action( CoordinatorIssueQueue::HOOK, [ new CoordinatorIssueQueue(), 'consume' ] );
+        add_action( 'init', [ CoordinatorIssueQueue::class, 'schedule' ], 30 );
 
         if ( defined( 'WP_CLI' ) && WP_CLI ) {
             \WP_CLI::add_command( 'district-team sync', new SyncCommand() );

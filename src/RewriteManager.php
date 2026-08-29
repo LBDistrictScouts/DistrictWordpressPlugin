@@ -20,7 +20,7 @@ class RewriteManager {
     /**
      * Increment this whenever post type/taxonomy rewrite rules change.
      */
-    public const VERSION = '1';
+    public const VERSION = '2';
 
     /**
      * Flush rewrite rules if this installation has not applied the current schema.

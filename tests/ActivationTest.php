@@ -74,6 +74,8 @@ class ActivationTest extends PluginTestCase
         Functions\when( 'register_post_meta' )->justReturn( true );
         Functions\expect( 'flush_rewrite_rules' )->once();
         Functions\expect( 'update_option' )->once()->with( RewriteManager::OPTION_NAME, RewriteManager::VERSION );
+        Functions\when( 'wp_next_scheduled' )->justReturn( false );
+        Functions\expect( 'wp_schedule_event' )->once();
 
         Activation::activate();
 
@@ -82,6 +84,7 @@ class ActivationTest extends PluginTestCase
 
     public function test_deactivation_flushes_rewrites(): void {
         Functions\expect( 'flush_rewrite_rules' )->once();
+        Functions\expect( 'wp_clear_scheduled_hook' )->once();
         Activation::deactivate();
         $this->addToAssertionCount( 1 );
     }

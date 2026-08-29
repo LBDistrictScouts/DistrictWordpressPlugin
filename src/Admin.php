@@ -29,6 +29,8 @@ class Admin {
                 'default' => '',
             ]
         );
+        register_setting( 'district_wordpress_plugin', CoordinatorIssueQueue::QUEUE_URL_OPTION, array( 'type' => 'string', 'sanitize_callback' => 'esc_url_raw', 'default' => '' ) );
+        register_setting( 'district_wordpress_plugin', CoordinatorIssueQueue::REGION_OPTION, array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field', 'default' => '' ) );
 
         add_settings_section( 'district_team_sync', 'District Team Synchronization', '__return_false', 'district-wordpress-plugin' );
         add_settings_field(
@@ -38,6 +40,23 @@ class Admin {
             'district-wordpress-plugin',
             'district_team_sync'
         );
+        add_settings_section( 'district_coordinator_issue_queue', 'Coordinator Issue SQS ingestion', '__return_false', 'district-wordpress-plugin' );
+        add_settings_field( CoordinatorIssueQueue::QUEUE_URL_OPTION, 'SQS Queue URL', array( $this, 'coordinator_queue_url_field' ), 'district-wordpress-plugin', 'district_coordinator_issue_queue' );
+        add_settings_field( CoordinatorIssueQueue::REGION_OPTION, 'AWS Region', array( $this, 'coordinator_region_field' ), 'district-wordpress-plugin', 'district_coordinator_issue_queue' );
+    }
+
+    public function coordinator_queue_url_field(): void {
+        $overridden = defined( 'DISTRICT_COORDINATOR_ISSUE_SQS_QUEUE_URL' );
+        $value = $overridden ? DISTRICT_COORDINATOR_ISSUE_SQS_QUEUE_URL : get_option( CoordinatorIssueQueue::QUEUE_URL_OPTION, '' );
+        printf( '<input type="url" class="regular-text code" name="%1$s" value="%2$s" %3$s>', esc_attr( CoordinatorIssueQueue::QUEUE_URL_OPTION ), esc_attr( (string) $value ), $overridden ? 'disabled="disabled"' : '' );
+        echo '<p class="description">AWS credentials use the SDK default credential chain. The queue should have a dead-letter queue for repeatedly invalid messages.</p>';
+    }
+
+    public function coordinator_region_field(): void {
+        $overridden = defined( 'DISTRICT_COORDINATOR_ISSUE_AWS_REGION' );
+        $value = $overridden ? DISTRICT_COORDINATOR_ISSUE_AWS_REGION : get_option( CoordinatorIssueQueue::REGION_OPTION, '' );
+        printf( '<input type="text" class="regular-text code" name="%1$s" value="%2$s" placeholder="eu-west-2" %3$s>', esc_attr( CoordinatorIssueQueue::REGION_OPTION ), esc_attr( (string) $value ), $overridden ? 'disabled="disabled"' : '' );
+        echo '<p class="description">Message schema: <code>schema/coordinator-issue-message.schema.json</code>.</p>';
     }
 
     public function api_url_field() {
