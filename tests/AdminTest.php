@@ -18,6 +18,7 @@ class AdminTest extends PluginTestCase
         Functions\when( 'esc_html' )->returnArg();
         Functions\when( 'esc_url' )->returnArg();
         Functions\when( 'admin_url' )->alias( static fn( $path ) => 'wp-admin/' . $path );
+        Functions\when( 'wp_date' )->alias( static fn( $format, $timestamp ) => gmdate( $format, $timestamp ) );
     }
     /**
      * Test that the Admin class file exists
@@ -78,11 +79,11 @@ class AdminTest extends PluginTestCase
     }
 
     public function test_constructor_menu_and_settings_register_wordpress_hooks(): void {
-        Functions\expect( 'add_action' )->times( 3 );
+        Functions\expect( 'add_action' )->times( 4 );
         $admin = new Admin();
 
         Functions\expect( 'add_options_page' )->once();
-        Functions\expect( 'add_management_page' )->once();
+        Functions\expect( 'add_management_page' )->twice();
         $admin->admin_menu();
 
         Functions\expect( 'register_setting' )->once()->with(
@@ -154,7 +155,37 @@ class AdminTest extends PluginTestCase
 
         $this->assertStringContainsString( 'synchronization completed successfully', $output );
         $this->assertStringContainsString( 'Dry Run Result', $output );
-        $this->assertStringContainsString( '2026-08-29T08:00:00Z', $output );
+        $this->assertStringContainsString( '2026-08-29 08:00:00 GMT', $output );
+    }
+
+    public function test_renders_coordinator_queue_monitor(): void {
+        $this->mock_output_functions();
+        Functions\when( 'current_user_can' )->justReturn( true );
+        Functions\when( 'sanitize_key' )->returnArg();
+        Functions\when( 'wp_unslash' )->returnArg();
+        Functions\when( 'wp_next_scheduled' )->justReturn( 1788076800 );
+        Functions\when( 'get_option' )->alias(
+            static function ( $key, $default = null ) {
+                $values = array(
+                    'district_coordinator_issue_sqs_queue_url' => 'https://sqs.eu-west-2.amazonaws.com/123/issues',
+                    'district_coordinator_issue_aws_region' => 'eu-west-2',
+                    'district_coordinator_issue_queue_last_poll' => '2026-08-30T08:00:00+00:00',
+                    'district_coordinator_issue_queue_last_result' => array( 'received' => 3, 'processed' => 2, 'failed' => 1, 'error' => 'Invalid message' ),
+                );
+                return $values[ $key ] ?? $default;
+            }
+        );
+        Functions\expect( 'wp_nonce_field' )->once();
+        Functions\expect( 'submit_button' )->once();
+
+        ob_start();
+        ( new Admin() )->coordinator_queue_page();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( 'Coordinator Queue', $output );
+        $this->assertStringContainsString( 'Last Poll Result', $output );
+        $this->assertStringContainsString( 'Invalid message', $output );
+        $this->assertStringContainsString( 'district_coordinator_queue_poll', $output );
     }
 
     public function test_run_sync_reports_configuration_error_and_redirects(): void {
