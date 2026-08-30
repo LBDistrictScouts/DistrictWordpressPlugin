@@ -7,7 +7,9 @@ class CoordinatorIssueIngester {
     public function ingest( array $message ): int {
         $existing = get_posts( array( 'post_type' => CoordinatorIssue::POST_TYPE, 'post_status' => 'any', 'posts_per_page' => 1, 'fields' => 'ids', 'meta_key' => CoordinatorIssue::EXTERNAL_ID_META, 'meta_value' => $message['external_id'] ) );
         if ( $existing ) {
-            return (int) $existing[0];
+            $post_id = (int) $existing[0];
+            $this->publish( $post_id );
+            return $post_id;
         }
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -55,6 +57,14 @@ class CoordinatorIssueIngester {
         foreach ( array( CoordinatorIssue::EXTERNAL_ID_META => sanitize_text_field( $message['external_id'] ), CoordinatorIssue::PDF_META => (int) $attachment_id, CoordinatorIssue::DATE_META => $message['issue_date'], CoordinatorIssue::YEAR_META => $message['issue_year'], CoordinatorIssue::MONTH_META => $message['issue_month'] ) as $key => $value ) {
             update_post_meta( $post_id, $key, $value );
         }
+        $this->publish( (int) $post_id );
         return (int) $post_id;
+    }
+
+    private function publish( int $post_id ): void {
+        $result = wp_update_post( array( 'ID' => $post_id, 'post_status' => 'publish' ), true );
+        if ( is_wp_error( $result ) ) {
+            throw new RuntimeException( $result->get_error_message() );
+        }
     }
 }

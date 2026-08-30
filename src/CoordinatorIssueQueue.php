@@ -37,6 +37,7 @@ class CoordinatorIssueQueue {
             'processed' => 0,
             'failed'    => 0,
             'error'     => '',
+            'errors'    => array(),
         );
         update_option( self::LAST_POLL_OPTION, gmdate( 'c' ), false );
 
@@ -60,6 +61,12 @@ class CoordinatorIssueQueue {
                 } catch ( \Throwable $error ) {
                     ++$poll['failed'];
                     $poll['error'] = $error->getMessage();
+                    $poll['errors'][] = array(
+                        'message_id' => (string) ( $message['MessageId'] ?? 'Unknown' ),
+                        'type'       => $error instanceof CoordinatorIssueValidationException ? 'Schema validation' : 'Ingestion',
+                        'message'    => $error->getMessage(),
+                        'payload'    => (string) ( $message['Body'] ?? '' ),
+                    );
                     error_log( 'Coordinator Issue SQS ingestion failed: ' . $error->getMessage() );
                 }
             }

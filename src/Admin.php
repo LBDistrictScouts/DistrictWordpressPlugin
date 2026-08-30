@@ -196,6 +196,22 @@ class Admin {
                 echo '<td>' . esc_html( (string) ( $last_result[ $key ] ?? 0 ) ) . '</td>';
             }
             echo '<td>' . esc_html( (string) ( $last_result['error'] ?? '' ) ?: 'None' ) . '</td></tr></tbody></table>';
+            if ( ! empty( $last_result['errors'] ) && is_array( $last_result['errors'] ) ) {
+                echo '<h3>Message Failures</h3><table class="widefat striped" style="max-width:1200px"><thead><tr><th>Message ID</th><th>Failure type</th><th>Details</th><th>Received payload</th></tr></thead><tbody>';
+                foreach ( $last_result['errors'] as $failure ) {
+                    if ( ! is_array( $failure ) ) {
+                        continue;
+                    }
+                    $payload = (string) ( $failure['payload'] ?? '' );
+                    $decoded_payload = json_decode( $payload, true );
+                    if ( JSON_ERROR_NONE === json_last_error() ) {
+                        $pretty_payload = wp_json_encode( $decoded_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+                        $payload = false === $pretty_payload ? $payload : $pretty_payload;
+                    }
+                    echo '<tr><td><code>' . esc_html( (string) ( $failure['message_id'] ?? 'Unknown' ) ) . '</code></td><td>' . esc_html( (string) ( $failure['type'] ?? 'Ingestion' ) ) . '</td><td>' . esc_html( (string) ( $failure['message'] ?? '' ) ) . '</td><td><details><summary>View payload</summary><pre style="max-width:520px;max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word">' . esc_html( $payload ) . '</pre></details></td></tr>';
+                }
+                echo '</tbody></table>';
+            }
         }
 
         echo '<h2>Poll Queue</h2>';

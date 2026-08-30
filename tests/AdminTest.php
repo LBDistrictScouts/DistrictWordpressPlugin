@@ -19,6 +19,7 @@ class AdminTest extends PluginTestCase
         Functions\when( 'esc_url' )->returnArg();
         Functions\when( 'admin_url' )->alias( static fn( $path ) => 'wp-admin/' . $path );
         Functions\when( 'wp_date' )->alias( static fn( $format, $timestamp ) => gmdate( $format, $timestamp ) );
+        Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
     }
     /**
      * Test that the Admin class file exists
@@ -170,7 +171,15 @@ class AdminTest extends PluginTestCase
                     'district_coordinator_issue_sqs_queue_url' => 'https://sqs.eu-west-2.amazonaws.com/123/issues',
                     'district_coordinator_issue_aws_region' => 'eu-west-2',
                     'district_coordinator_issue_queue_last_poll' => '2026-08-30T08:00:00+00:00',
-                    'district_coordinator_issue_queue_last_result' => array( 'received' => 3, 'processed' => 2, 'failed' => 1, 'error' => 'Invalid message' ),
+                    'district_coordinator_issue_queue_last_result' => array(
+                        'received' => 3,
+                        'processed' => 2,
+                        'failed' => 1,
+                        'error' => 'Invalid message',
+                        'errors' => array(
+                            array( 'message_id' => 'sqs-message-1', 'type' => 'Schema validation', 'message' => 'title must not be empty.', 'payload' => '{"title":""}' ),
+                        ),
+                    ),
                 );
                 return $values[ $key ] ?? $default;
             }
@@ -185,6 +194,10 @@ class AdminTest extends PluginTestCase
         $this->assertStringContainsString( 'Coordinator Queue', $output );
         $this->assertStringContainsString( 'Last Poll Result', $output );
         $this->assertStringContainsString( 'Invalid message', $output );
+        $this->assertStringContainsString( 'sqs-message-1', $output );
+        $this->assertStringContainsString( 'title must not be empty', $output );
+        $this->assertStringContainsString( 'Received payload', $output );
+        $this->assertStringContainsString( '"title"', $output );
         $this->assertStringContainsString( 'district_coordinator_queue_poll', $output );
     }
 

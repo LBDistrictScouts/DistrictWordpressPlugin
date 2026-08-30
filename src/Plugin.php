@@ -37,6 +37,7 @@ class Plugin {
         require_once DISTRICTWP_PATH . 'src/TeamRole.php';
         require_once DISTRICTWP_PATH . 'src/CoordinatorIssue.php';
         require_once DISTRICTWP_PATH . 'src/Policy.php';
+        require_once DISTRICTWP_PATH . 'src/CoordinatorIssueValidationException.php';
         require_once DISTRICTWP_PATH . 'src/CoordinatorIssueMessageValidator.php';
         require_once DISTRICTWP_PATH . 'src/CoordinatorIssueIngester.php';
         require_once DISTRICTWP_PATH . 'src/CoordinatorIssueQueue.php';

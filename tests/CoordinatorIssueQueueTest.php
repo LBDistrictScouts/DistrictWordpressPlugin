@@ -3,6 +3,7 @@
 namespace LBDistrictScouts\DistrictWordpressPlugin\Tests;
 
 use Brain\Monkey\Functions;
+use LBDistrictScouts\DistrictWordpressPlugin\CoordinatorIssueIngester;
 use LBDistrictScouts\DistrictWordpressPlugin\CoordinatorIssueMessageValidator;
 use LBDistrictScouts\DistrictWordpressPlugin\CoordinatorIssueQueue;
 use RuntimeException;
@@ -57,6 +58,7 @@ class CoordinatorIssueQueueTest extends PluginTestCase {
     }
 
     public function test_rejects_non_uuid_external_id(): void {
+        Functions\when( 'wp_parse_url' )->alias( 'parse_url' );
         $message = $this->valid_message();
         $message['external_id'] = 'coordinator-2026-08';
 
@@ -82,6 +84,24 @@ class CoordinatorIssueQueueTest extends PluginTestCase {
         ( new CoordinatorIssueMessageValidator() )->validate( json_encode( $message ) );
     }
 
+    public function test_reports_all_schema_validation_errors(): void {
+        Functions\when( 'wp_parse_url' )->alias( 'parse_url' );
+        $message = $this->valid_message();
+        $message['title'] = '';
+        $message['issue_month'] = 13;
+        $message['pdf_url'] = 'http://example.org/file.pdf';
+
+        try {
+            ( new CoordinatorIssueMessageValidator() )->validate( json_encode( $message ) );
+            $this->fail( 'Invalid message was accepted.' );
+        } catch ( \LBDistrictScouts\DistrictWordpressPlugin\CoordinatorIssueValidationException $error ) {
+            $this->assertCount( 3, $error->get_validation_errors() );
+            $this->assertStringContainsString( 'title', $error->getMessage() );
+            $this->assertStringContainsString( 'issue_month', $error->getMessage() );
+            $this->assertStringContainsString( 'pdf_url', $error->getMessage() );
+        }
+    }
+
     public function test_registers_interval_schedules_and_unschedules_cron(): void {
         Functions\when( '__' )->returnArg();
         $schedules = CoordinatorIssueQueue::add_interval( array() );
@@ -97,5 +117,28 @@ class CoordinatorIssueQueueTest extends PluginTestCase {
         Functions\when( 'get_option' )->justReturn( '' );
         ( new CoordinatorIssueQueue() )->consume();
         $this->addToAssertionCount( 1 );
+    }
+
+    public function test_existing_ingested_issue_is_published(): void {
+        Functions\when( 'get_posts' )->justReturn( array( 42 ) );
+        Functions\expect( 'wp_update_post' )->once()->with(
+            array( 'ID' => 42, 'post_status' => 'publish' ),
+            true
+        )->andReturn( 42 );
+        Functions\when( 'is_wp_error' )->justReturn( false );
+
+        $post_id = ( new CoordinatorIssueIngester() )->ingest( array( 'external_id' => '550e8400-e29b-41d4-a716-446655440000' ) );
+
+        $this->assertSame( 42, $post_id );
+    }
+
+    public function test_new_ingestion_publishes_only_after_metadata_is_written(): void {
+        $source = file_get_contents( dirname( __DIR__ ) . '/src/CoordinatorIssueIngester.php' );
+        $metadata_position = strpos( $source, 'update_post_meta' );
+        $publish_position = strpos( $source, '$this->publish( (int) $post_id )' );
+
+        $this->assertNotFalse( $metadata_position );
+        $this->assertNotFalse( $publish_position );
+        $this->assertGreaterThan( $metadata_position, $publish_position );
     }
 }
